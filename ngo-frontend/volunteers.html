@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Volunteers | DGNV NGO</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+  <div class="app-shell">
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-brand"><img src="assets/logo.png" class="sidebar-logo" alt="DGNV"><div><p class="sidebar-title">DGNV NGO</p><p class="sidebar-subtitle">Response Console</p></div></div>
+      <nav class="sidebar-nav">
+        <a class="sidebar-link" href="dashboard.html"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a class="sidebar-link" href="requests.html"><i class="bi bi-inboxes"></i> Requests</a>
+        <a class="sidebar-link" href="volunteers.html"><i class="bi bi-people"></i> Volunteers</a>
+        <a class="sidebar-link" href="tasks.html"><i class="bi bi-list-check"></i> Tasks</a>
+        <a class="sidebar-link" href="profile.html"><i class="bi bi-person-circle"></i> Profile</a>
+        <a class="sidebar-link" href="change-password.html"><i class="bi bi-shield-lock"></i> Password</a>
+      </nav>
+    </aside>
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+    <main class="main-area">
+      <header class="topbar">
+        <div class="d-flex align-items-center gap-3"><button id="sidebarToggle" class="btn btn-outline-primary d-lg-none"><i class="bi bi-list"></i></button><div><h1 class="page-title">Volunteers</h1><p class="page-subtitle">Manage verified volunteer records</p></div></div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#volunteerModal"><i class="bi bi-plus-lg me-1"></i> Add Volunteer</button>
+      </header>
+      <section class="content">
+        <div class="table-panel">
+          <div class="table-toolbar">
+            <div><h2 class="h6 mb-1">Volunteer List</h2><span id="volunteerCount" class="text-secondary small">0 volunteers</span></div>
+            <div class="d-flex gap-2"><input id="volunteerSearch" class="form-control form-control-sm" type="search" placeholder="Search volunteers"><button id="volunteerRefreshBtn" class="btn btn-sm btn-primary"><i class="bi bi-arrow-clockwise"></i></button></div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead><tr><th>ID</th><th>Full Name</th><th>Email</th><th>Phone</th><th>District</th><th>DS Division</th><th>Availability</th><th>Action</th></tr></thead>
+              <tbody id="volunteersBody"></tbody>
+            </table>
+          </div>
+          <div class="d-flex justify-content-end p-3" id="volunteersPagination"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal fade" id="volunteerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <form id="volunteerForm">
+          <div class="modal-header"><h2 class="modal-title h5">Add Volunteer</h2><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-md-6"><label class="form-label">NGO ID</label><input name="ngo_id" class="form-control" type="number" value="1" required></div>
+              <div class="col-md-6"><label class="form-label">Full Name</label><input name="full_name" class="form-control" required></div>
+              <div class="col-md-6"><label class="form-label">Email</label><input name="email" class="form-control" type="email" required></div>
+              <div class="col-md-6"><label class="form-label">Phone</label><input name="phone" class="form-control" required></div>
+              <div class="col-md-4"><label class="form-label">District</label><input name="district" class="form-control" required></div>
+              <div class="col-md-4"><label class="form-label">DS Division</label><input name="ds_division" class="form-control" required></div>
+              <div class="col-md-4"><label class="form-label">GS Division</label><input name="gs_division" class="form-control" required></div>
+            </div>
+          </div>
+          <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary">Save Volunteer</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="spinnerOverlay" class="spinner-overlay"><div class="spinner-border text-primary" role="status"></div></div>
+  <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3"></div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
+  <script src="js/api.js"></script><script src="js/auth.js"></script><script src="js/volunteers.js"></script>
+</body>
+</html>

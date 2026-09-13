@@ -1,0 +1,205 @@
+services:
+
+  discovery-service:
+    build:
+      context: ./discovery-service/discovery-service
+      dockerfile: Dockerfile
+    container_name: dgnv-discovery
+    ports:
+      - "8761:8761"
+    networks:
+      - dgnv-network
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  user-service:
+    build:
+      context: ./user-service/user_service
+      dockerfile: Dockerfile
+    container_name: dgnv-user
+    ports:
+      - "6002:6002"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/dgnv_users?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Colombo
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - dgnv-network
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  auth-service:
+    build:
+      context: ./auth-service/auth_service
+      dockerfile: Dockerfile
+    container_name: dgnv-auth
+    ports:
+      - "6001:6001"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/auth_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Colombo
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      USER_SERVICE_URL: http://user-service:6002
+      OFFICER_SERVICE_URL: http://user-service:6002
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+    networks:
+      - dgnv-network
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  request-service:
+    build:
+      context: ./request-service/request_service
+      dockerfile: Dockerfile
+    container_name: dgnv-request
+    ports:
+      - "6003:6003"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/dgnv_requests?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Colombo
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+    networks:
+      - dgnv-network
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  integration-service:
+    build:
+      context: ../dgnv-integration-service/dgnv-integration-service
+      dockerfile: Dockerfile
+    container_name: dgnv-integration
+    ports:
+      - "9100:9100"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/integration_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Colombo
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      DGNV_SERVICES_GOVERNMENT_REQUEST_BASE_URL: http://request-service:6003
+      DGNV_SERVICES_NGO_REQUEST_BASE_URL: http://host.docker.internal:9203
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      request-service:
+        condition: service_started
+    networks:
+      - dgnv-network
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  api-gateway:
+    build:
+      context: ./api-gateway/api-gateway
+      dockerfile: Dockerfile
+    container_name: dgnv-gateway
+    ports:
+      - "9095:9095"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_0_ID: AUTH-SERVICE
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_0_URI: http://auth-service:6001
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_0_PREDICATES_0: Path=/auth/**
+
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_1_ID: USER-SERVICE
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_1_URI: http://user-service:6002
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_1_PREDICATES_0: Path=/citizens/**
+
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_2_ID: OFFICER-SERVICE
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_2_URI: http://user-service:6002
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_2_PREDICATES_0: Path=/officers/**
+
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_3_ID: REQUEST-SERVICE
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_3_URI: http://request-service:6003
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_3_PREDICATES_0: Path=/requests/**
+
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_4_ID: DASHBOARD-SERVICE
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_4_URI: http://request-service:6003
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_4_PREDICATES_0: Path=/dashboard/**
+
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_5_ID: INTEGRATION-SERVICE
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_5_URI: http://integration-service:9100
+      SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_5_PREDICATES_0: Path=/api/integration/**
+
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      user-service:
+        condition: service_started
+      request-service:
+        condition: service_started
+      integration-service:
+        condition: service_started
+    networks:
+      - dgnv-network
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ../dgnv-government-frontend-home-sri-lanka/dgnv-government-frontend
+      dockerfile: Dockerfile
+    container_name: dgnv-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      api-gateway:
+        condition: service_started
+      integration-service:
+        condition: service_started
+    networks:
+      - dgnv-network
+
+
+networks:
+  dgnv-network:
+    driver: bridge
