@@ -30,8 +30,20 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
-                        .anyRequest().authenticated()
+
+                        // Public authentication endpoints
+                        .requestMatchers(
+                                "/auth/login",
+                                "/auth/register"
+                        ).permitAll()
+
+                        // Admin-only endpoints
+                        .requestMatchers("/auth/admin/**")
+                        .hasRole("ADMIN")
+
+                        // All other endpoints require authentication
+                        .anyRequest()
+                        .authenticated()
                 );
 
         http.addFilterBefore(
