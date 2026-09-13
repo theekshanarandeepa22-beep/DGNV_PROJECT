@@ -498,18 +498,19 @@ exports.deleteVolunteer = (req, res) => {
 */
 exports.getAllVolunteers = (req, res) => {
 
-    db.query(
-        "SELECT * FROM volunteers",
-        (err, results) => {
+    const ngoId = req.query.ngo_id;
+    const sql = ngoId
+        ? "SELECT * FROM volunteers WHERE ngo_id = ? ORDER BY id DESC"
+        : "SELECT * FROM volunteers ORDER BY id DESC";
+    const params = ngoId ? [ngoId] : [];
 
-            if (err) {
-                return res.status(500).json(err);
-            }
-
-            return res.json(results);
-
+    db.query(sql, params, (err, results) => {
+        if (err) {
+            return res.status(500).json(err);
         }
-    );
+
+        return res.json(results);
+    });
 
 };
 
@@ -520,17 +521,18 @@ exports.getAllVolunteers = (req, res) => {
 */
 exports.getAvailableVolunteers = (req, res) => {
 
-    db.query(
-        "SELECT * FROM volunteers WHERE availability='AVAILABLE'",
-        (err, results) => {
+    const ngoId = req.query.ngo_id;
+    const sql = ngoId
+        ? "SELECT * FROM volunteers WHERE availability='AVAILABLE' AND ngo_id = ?"
+        : "SELECT * FROM volunteers WHERE availability='AVAILABLE'";
+    const params = ngoId ? [ngoId] : [];
 
-            if (err) {
-                return res.status(500).json(err);
-            }
-
-            return res.json(results);
-
+    db.query(sql, params, (err, results) => {
+        if (err) {
+            return res.status(500).json(err);
         }
-    );
+
+        return res.json(results);
+    });
 
 };

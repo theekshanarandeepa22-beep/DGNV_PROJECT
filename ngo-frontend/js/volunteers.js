@@ -89,11 +89,20 @@ function renderVolunteers() {
 async function addVolunteer(event) {
   event.preventDefault();
   const form = event.currentTarget;
+  let session = {};
+  try { session = JSON.parse(localStorage.getItem("dgnv_ngo_user") || "{}"); } catch {}
+  const ngoId = Number(session.ngoId || 0);
+  if (!ngoId) {
+    showToast("NGO identity is missing. Please log in again.", "danger");
+    return;
+  }
+
   const payload = {
-    ngo_id: Number(form.ngo_id.value || 1),
+    ngo_id: ngoId,
     full_name: form.full_name.value.trim(),
     email: form.email.value.trim(),
     phone: form.phone.value.trim(),
+    password: form.password.value,
     district: form.district.value.trim(),
     ds_division: form.ds_division.value.trim(),
     gs_division: form.gs_division.value.trim()

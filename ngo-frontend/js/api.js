@@ -7,6 +7,20 @@ const API_BASES = {
 const TOKEN_KEY = "dgnv_ngo_token";
 const USER_KEY = "dgnv_ngo_user";
 
+function getLoggedInNgoId() {
+  try {
+    const session = JSON.parse(localStorage.getItem(USER_KEY) || "{}");
+    if (session.ngoId) return Number(session.ngoId);
+
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) return null;
+    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+    return payload.ngo_id ? Number(payload.ngo_id) : null;
+  } catch {
+    return null;
+  }
+}
+
 const http = axios.create({
   timeout: 15000,
   headers: {
@@ -65,7 +79,8 @@ const api = {
   },
 
   getVolunteers() {
-    return http.get(`${API_BASES.volunteers}/api/volunteers`);
+    const ngoId = getLoggedInNgoId();
+    return http.get(`${API_BASES.volunteers}/api/volunteers`, { params: ngoId ? { ngo_id: ngoId } : {} });
   },
 
   getVolunteer(id) {
@@ -73,7 +88,8 @@ const api = {
   },
 
   getAvailableVolunteers() {
-    return http.get(`${API_BASES.volunteers}/api/volunteers/available`);
+    const ngoId = getLoggedInNgoId();
+    return http.get(`${API_BASES.volunteers}/api/volunteers/available`, { params: ngoId ? { ngo_id: ngoId } : {} });
   },
 
   addVolunteer(payload) {

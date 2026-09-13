@@ -15,7 +15,9 @@ function saveSession(token, role, remember) {
     id: user.id || null,
     email: user.email || "",
     role: resolvedRole,
+    ngoId: user.ngo_id || null,
     remember: Boolean(remember),
+    ngoId: user.ngo_id ? Number(user.ngo_id) : null,
     loginAt: new Date().toISOString()
   };
 

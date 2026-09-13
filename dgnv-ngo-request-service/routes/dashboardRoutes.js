@@ -1,11 +1,8 @@
 const express = require("express");
-
 const router = express.Router();
+const { getDashboardSummary } = require("../controllers/dashboardController");
+const { requireNgoAuth } = require("../middleware");
 
-const {
-    getDashboardSummary
-} = require("../controllers/dashboardController");
-
-router.get("/summary", getDashboardSummary);
+router.get("/summary", requireNgoAuth, getDashboardSummary);
 
 module.exports = router;

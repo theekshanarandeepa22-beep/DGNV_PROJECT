@@ -52,10 +52,11 @@
           <div class="modal-header"><h2 class="modal-title h5">Add Volunteer</h2><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
           <div class="modal-body">
             <div class="row g-3">
-              <div class="col-md-6"><label class="form-label">NGO ID</label><input name="ngo_id" class="form-control" type="number" value="1" required></div>
+              <div class="col-md-6"><label class="form-label">NGO</label><input class="form-control" value="Current logged-in NGO" disabled></div>
               <div class="col-md-6"><label class="form-label">Full Name</label><input name="full_name" class="form-control" required></div>
               <div class="col-md-6"><label class="form-label">Email</label><input name="email" class="form-control" type="email" required></div>
               <div class="col-md-6"><label class="form-label">Phone</label><input name="phone" class="form-control" required></div>
+              <div class="col-md-6"><label class="form-label">Password</label><input name="password" class="form-control" type="password" minlength="6" autocomplete="new-password" required></div>
               <div class="col-md-4"><label class="form-label">District</label><input name="district" class="form-control" required></div>
               <div class="col-md-4"><label class="form-label">DS Division</label><input name="ds_division" class="form-control" required></div>
               <div class="col-md-4"><label class="form-label">GS Division</label><input name="gs_division" class="form-control" required></div>
